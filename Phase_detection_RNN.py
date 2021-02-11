@@ -2,16 +2,13 @@
 # ---
 # jupyter:
 #   jupytext:
+#     cell_metadata_filter: -all
 #     formats: ipynb,py:percent
 #     text_representation:
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
 #       jupytext_version: 1.9.1
-#   kernelspec:
-#     display_name: Python 3 (Spyder)
-#     language: python3
-#     name: python3
 # ---
 
 # %%
@@ -21,9 +18,6 @@ from qampy.helpers import normalise_and_center as normcenter
 from qampy.core.filter import rrcos_pulseshaping as lowpassFilter
 import matplotlib.pyplot as plt
 import numpy as np
-from bokeh.io import output_notebook
-from bokeh.plotting import figure, show
-from scipy.stats import kde
 import seaborn as sns
 import pandas as pd
 import tensorflow as tf
@@ -34,61 +28,11 @@ from sklearn.metrics import mean_squared_error,r2_score
 from sklearn.preprocessing import MinMaxScaler,StandardScaler
 from tensorflow.keras.preprocessing.sequence import TimeseriesGenerator
 
-output_notebook()
 
 # %%
 plt.rcParams['font.size'] = 18
 plt.rcParams['figure.figsize'] = [16,8]
 plt.rcParams['lines.linewidth'] = 2
-
-
-# %%
-def plot_constellation(E):
-    
-    npol = E.shape;
-    fig = figure(title="QAM snal constellation", output_backend="webgl")
-    
-    if npol[0] == 2:        
-        fig.scatter(E[0].real, E[0].imag, color='red', alpha=0.3, legend_label="X")
-        fig.scatter(E[1].real, E[1].imag, color='blue', alpha=0.3, legend_label="Y")        
-    elif npol[0] == 1:       
-        fig.scatter(E[0].real, E[0].imag, color='red', alpha=0.3, legend_label="X")        
- 
-        
-    fig.xaxis[0].axis_label = "In-Phase"
-    fig.yaxis[0].axis_label = "Quadrature"
-    show(fig)
-    
-def plot_constellation_fancy(E):
-    npol = E.shape;
-        
-    nbins=100
-    if npol[0] == 2: 
-        for indPlot in range(0,2):
-            x = E[indPlot].real
-            y = E[indPlot].imag
-            
-            k = kde.gaussian_kde([x,y])
-            xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
-            zi = k(np.vstack([xi.flatten(), yi.flatten()]))
- 
-            # Make the plot
-            plt.figure(figsize=(8, 6), dpi=100, facecolor='w', edgecolor='k')
-            plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='gouraud', cmap='Blues')
-            plt.show()
-    elif npol[0] == 1:
-        x = E[0].real
-        y = E[0].imag
-
-        k = kde.gaussian_kde([x,y])
-        xi, yi = np.mgrid[x.min():x.max():nbins*1j, y.min():y.max():nbins*1j]
-        zi = k(np.vstack([xi.flatten(), yi.flatten()]))
- 
-        # Make the plot
-        plt.figure(figsize=(8, 6), dpi=100, facecolor='w', edgecolor='k')
-        plt.pcolormesh(xi, yi, zi.reshape(xi.shape), shading='gouraud', cmap='Blues')
-        plt.show()
-
 
 # %%
 # Geração do sinal QAM
@@ -105,27 +49,6 @@ s = signals.ResampledQAM(M, 2**16, fb=Fb, fs=Fs, nmodes=2, resamplekwargs={"beta
 
 # Adiciona ruído gaussiano
 s = impairments.simulate_transmission(s, snr=SNR)
-
-# Detecção do sinal com filtro casado + downsampling e normalização do sinal para energia média 1 
-# (para visualização da constelação)
-
-symb = normcenter(s.resample(fnew=Fb, beta = rolloff))
-
-# Plota constelação
-#plot_constellation(symb)
-#plot_constellation_fancy(symb)
-
-# Caclula parâmetros de desempenho
-SNR_est = 10*np.log10(symb.est_snr())
-GMI_est = symb.cal_gmi()
-
-np.set_printoptions(formatter={'float': lambda x: "{0:0.6f}".format(x)})
-print("Parâmetros de desempenho:\n")
-print("SNR estimada da constelação: ", np.array2string(SNR_est), " dB")
-print("GMI estimada da constelação: ", np.array2string(GMI_est[0][0]), np.array2string(GMI_est[0][1]), " bits/symb")
-print("BER: ", symb.cal_ber())
-print("BER (teórica): ", np.array2string(ber_theory(helpers.dB2lin(SNR),M)))
-
 
 # %%
 # Plota espectro do sinal QAM em banda base
@@ -202,59 +125,43 @@ y_train = phases_train.reshape(-1,1)[:5000]
 y_test = phases_test.reshape(-1,1)[:5000]
 
 # %%
-print(pd.DataFrame(y_test).describe())
-
-# %%
-sns.histplot(pd.DataFrame(y_test),bins=50)
-
-# %%
-dataset_train = np.concatenate((X_train,y_train),axis=1)
-dataset_test = np.concatenate((X_test,y_test),axis=1)
-
-plt.figure(figsize=(14,8))
-sns.heatmap(np.corrcoef(dataset_train.T),annot=True)
-plt.figure(figsize=(14,8))
-sns.heatmap(np.corrcoef(dataset_test.T),annot=True)
-
-# %%
 scaler = MinMaxScaler()
-#scaler = StandardScaler()
-
-# %%
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
+# %%
+num_features = SpS
+length = 1
+generator = TimeseriesGenerator(X_train,y_train,length=length,batch_size=1)
 
 # %%
-stop = EarlyStopping(monitor='val_loss',patience=5)
-# %%
-# define model
 model = Sequential()
-model.add(Dense(100,activation='relu',input_shape=(SpS,)))
-model.add(Dense(100,activation='relu'))
-Dropout(0.2)
+model.add(LSTM(50, activation='relu', input_shape=(length, num_features)))
+model.add(Dense(50,activation='relu'))
+model.add(Dense(10,activation='relu'))
 model.add(Dense(1))
 model.compile(optimizer='adam', loss='mse')
+
 # %%
 model.summary()
-# %%
-model.fit(X_train,y_train,epochs=300,callbacks=[stop],
-validation_data=(X_test,y_test),batch_size=64)
-# %%
-plt.plot(np.sqrt(model.history.history['loss']))
-plt.plot(np.sqrt(model.history.history['val_loss']))
-plt.xlabel('Epochs')
-plt.ylabel('Root Mean Square Error - RMSE')
-plt.grid(True)
 
 # %%
-preds = model.predict(X_test)
+early_stop = EarlyStopping(monitor='val_loss',patience=3)
 # %%
-test = np.concatenate((preds,y_test),axis=1)
-print(test[:5])
+validation_generator = TimeseriesGenerator(X_test,y_test, length=length, batch_size=1)
+# %%
+model.fit_generator(generator,epochs=20,
+                    validation_data=validation_generator,
+                   callbacks=[early_stop])
+# %%
+preds = []
 
+for x in range(100):
+    prediction = model.predict(validation_generator[x][0])[0][0]
+    preds.append(prediction)
+
+preds = np.array(preds).reshape((-1,1))
 # %%
-print('rmse = ', np.sqrt(mean_squared_error(y_test,preds)))
-print('r2 = ' , r2_score(y_test,preds))
+model.evaluate_generator(validation_generator)
 # %%
 plt.figure(figsize=(16,8))
 plt.plot(y_test[:50],'-o')
