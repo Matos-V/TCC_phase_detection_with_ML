@@ -84,7 +84,7 @@ sfm = A + sfilt*np.exp(1j*Δf)
 # plt.grid(True)
 
 # %%
-n_features = SpS*2
+n_features = SpS*1
 # valor absoluto do sinal -> entrada da rede
 amplitudes_train = np.abs(sfm[0,])
 phases_train = np.angle(sfm[0, n_features::n_features])  # fase do sinal     -> saída desejada
