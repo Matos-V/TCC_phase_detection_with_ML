@@ -41,12 +41,12 @@ sfm = A + sfilt*np.exp(1j*Δf)
 
 # %%
 # valor absoluto do sinal -> entrada da rede
-amplitudes_train = np.abs(sfm[0, ::SpS])
-phases_train = np.angle(sfm[0, ::SpS])  # fase do sinal     -> saída desejada
+amplitudes_train = np.abs(sfm[0])
+phases_train = np.angle(sfm[0])  # fase do sinal     -> saída desejada
 
 # valor absoluto do sinal  -> entrada da rede
-amplitudes_test = np.abs(sfm[1, ::SpS])
-phases_test = np.angle(sfm[1, ::SpS])  # fase do sinal      -> saída desejada
+amplitudes_test = np.abs(sfm[1])
+phases_test = np.angle(sfm[1])  # fase do sinal      -> saída desejada
 
 # %%
 X_train = amplitudes_train.reshape(-1, 1)[:5000]
@@ -62,3 +62,4 @@ dataset_test = np.concatenate((X_test, y_test), axis=1)
 # %%
 pd.DataFrame(dataset_train).to_pickle('dataset_train_03.pkl')
 pd.DataFrame(dataset_test).to_pickle('dataset_test_03.pkl')
+#%%
