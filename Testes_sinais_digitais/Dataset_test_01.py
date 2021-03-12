@@ -95,20 +95,6 @@ amplitudes_test = np.abs(sfm[1, ])
 # fase do sinal      -> saída desejada
 phases_test = np.angle(sfm[1, n_features::n_features])
 
-L = 10
-# fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(16, 12))
-
-# axes[0].set_title("ABS of the QAM Sinal")
-# axes[0].plot(t[0:int(n_features*L)], amplitudes_train[0:int(n_features*L)], '-o', color='C0')
-# axes[0].set_ylabel("Amplitude")
-# axes[0].grid(True)
-
-# axes[1].plot(t[0:L], phases_train[0:L], '-o', color='C1')
-# axes[1].set_title("Phase of the QAM Sinal")
-# axes[1].set_xlabel("Tempo (s)")
-# axes[1].set_ylabel("Phase (rad)")
-# axes[1].grid(True)
-
 # %%
 size = 5000
 X_train = amplitudes_train.reshape(-1, n_features)[:size]

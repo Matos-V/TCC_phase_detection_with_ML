@@ -37,7 +37,7 @@ scaler = MinMaxScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 # %%
-forest = RandomForestRegressor(1024)
+forest = RandomForestRegressor(200)
 forest.fit(X_train, y_train)
 # %%
 y_preds = forest.predict(X_test)
@@ -55,4 +55,23 @@ plt.title('True and predicted phases comparison')
 plt.grid(True)
 plt.show()
 
+#%%
+M = 64        # ordem da modulação
+Fb = 40e9      # taxa de símbolos
+SpS = 4         # amostras por símbolo
+Fs = SpS*Fb    # taxa de amostragem
+SNR = 40        # relação sinal ruído (dB)
+rolloff = 0.01  # Rolloff do filtro formatador de pulso
 # %%
+sig_abs = scaler.inverse_transform(X_test)[:].reshape((-1))
+size = sig_abs.shape[0]
+sinal = sig_abs*np.exp(1j*y_test.reshape(-1))
+#%%
+t = np.arange(0, s[0].size)*1/Fs
+
+A = (np.max(np.abs(sfilt)))*np.exp(1j*np.deg2rad(45))
+Δf = 2*np.pi*(sfilt.fb/2)*t
+sfm = A + sfilt*np.exp(1j*Δf)
+
+#%%
+signals.from_

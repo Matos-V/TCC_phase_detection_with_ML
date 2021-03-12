@@ -26,8 +26,8 @@ plt.rcParams['font.size'] = 18
 plt.rcParams['figure.figsize'] = [16, 8]
 plt.rcParams['lines.linewidth'] = 2
 # %%
-dataset_train = pd.read_pickle('Testes_sinais_digitais/dataset_train_03.pkl')
-dataset_test = pd.read_pickle('Testes_sinais_digitais/dataset_test_03.pkl')
+dataset_train = pd.read_pickle('Testes_sinais_digitais/dataset_train_02.pkl')
+dataset_test = pd.read_pickle('Testes_sinais_digitais/dataset_test_02.pkl')
 data_shape = dataset_train.shape[-1]
 num_features = data_shape-1
 
@@ -54,12 +54,7 @@ model = Sequential()
 model.add(Dense(100, activation='relu', input_shape=(num_features,)))
 model.add(Dense(100, activation='relu'))
 Dropout(0.5)
-model.add(Dense(100, activation='relu'))
-Dropout(0.5)
-model.add(Dense(100, activation='relu'))
-Dropout(0.5)
-model.add(Dense(100, activation='relu'))
-Dropout(0.5)
+
 
 model.add(Dense(1))
 model.compile(optimizer='adam', loss='mse')
@@ -97,3 +92,16 @@ plt.grid(True)
 plt.show()
 
 # %%
+#%%
+M = 64        # ordem da modulação
+Fb = 40e9      # taxa de símbolos
+SpS = 4         # amostras por símbolo
+Fs = SpS*Fb    # taxa de amostragem
+SNR = 40        # relação sinal ruído (dB)
+rolloff = 0.01  # Rolloff do filtro formatador de pulso
+# %%
+sig_abs = scaler.inverse_transform(X_test)[:,0].ravel()
+size = sig_abs.shape[0]
+preds_phase = preds.ravel()
+sinal = sig_abs*np.exp(1j*preds_phase)
+#%%

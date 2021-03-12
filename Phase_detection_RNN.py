@@ -102,11 +102,11 @@ plt.grid(True)
 # %%
 # valor absoluto do sinal -> entrada da rede
 amplitudes_train = np.abs(sfm[0])
-phases_train = np.angle(sfm[0, ::SpS])  # fase do sinal     -> saída desejada
+phases_train = np.angle(sfm[0])  # fase do sinal     -> saída desejada
 
 # valor absoluto do sinal  -> entrada da rede
 amplitudes_test = np.abs(sfm[1])
-phases_test = np.angle(sfm[1, ::SpS])  # fase do sinal      -> saída desejada
+phases_test = np.angle(sfm[1])  # fase do sinal      -> saída desejada
 
 L = 10
 fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(16, 12))
@@ -123,13 +123,13 @@ axes[1].set_ylabel("Phase (rad)")
 axes[1].grid(True)
 
 # %%
-X_train = amplitudes_train.reshape(-1, SpS)[:5000]
-X_test = amplitudes_test.reshape(-1, SpS)[:5000]
+X_train = amplitudes_train.reshape(-1, SpS)[:1000]
+X_test = amplitudes_test.reshape(-1, SpS)[:1000]
 
 # %%
-y_train = phases_train.reshape(-1, 1)[:5000]
+y_train = phases_train.reshape(-1, 1)[:1000]
 
-y_test = phases_test.reshape(-1, 1)[:5000]
+y_test = phases_test.reshape(-1, 1)[:1000]
 
 # %%
 scaler = MinMaxScaler()
@@ -137,9 +137,9 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 # %%
 num_features = SpS
-length = 4
+length = 16
 generator = TimeseriesGenerator(X_train, y_train, length=length, batch_size=1)
-
+validation_generator = TimeseriesGenerator(X_test, y_test, length=length, batch_size=1)
 # %%
 model = Sequential()
 model.add(LSTM(100, activation='relu', input_shape=(length, num_features)))
