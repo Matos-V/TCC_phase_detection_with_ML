@@ -17,58 +17,27 @@ plt.rcParams['figure.figsize'] = [16, 8]
 plt.rcParams['lines.linewidth'] = 2
 
 # %%
-# Geração do sinal QAM
-
-M = 64        # ordem da modulação
-Fb = 40e9      # taxa de símbolos
-SpS = 4         # amostras por símbolo
-Fs = SpS*Fb    # taxa de amostragem
-SNR = 40        # relação sinal ruído (dB)
-rolloff = 0.01  # Rolloff do filtro formatador de pulso
-
-# Gera sequência de símbolos QAM e a filtra com um filtro formatador de pulso rrc (root-raised cosine)
-s = signals.ResampledQAM(M, 2**16, fb=Fb, fs=Fs, nmodes=2,
-                         resamplekwargs={"beta": rolloff, "renormalise": True})
-
-# Adiciona ruído gaussiano
-s = impairments.simulate_transmission(s, snr=SNR)
-sfilt = normcenter(lowpassFilter(s, Fs, 1/Fb, 0.001, taps=4001))
-
-sfm = sfilt.copy()
-
-t = np.arange(0, s[0].size)*1/s.fs
-
-A = (np.max(np.abs(sfilt)))*np.exp(1j*np.deg2rad(45))
-Δf = 2*np.pi*(sfilt.fb/2)*t
-sfm = A + sfilt*np.exp(1j*Δf)
+dataset_train = pd.read_pickle('Testes_sinais_digitais/dataset_train_03.pkl')
+dataset_test = pd.read_pickle('Testes_sinais_digitais/dataset_test_03.pkl')
+data_shape = dataset_train.shape[-1]
+num_features = data_shape-1
 
 # %%
-# valor absoluto do sinal -> entrada da rede
-amplitudes_train = np.abs(sfm[0])
-phases_train = np.angle(sfm[0, ::SpS])  # fase do sinal     -> saída desejada
+X_train = dataset_train.drop(
+    data_shape-1, axis=1).values.reshape(-1, num_features)
+X_test = dataset_test.drop(
+    data_shape-1, axis=1).values.reshape(-1, num_features)
 
-# valor absoluto do sinal  -> entrada da rede
-amplitudes_test = np.abs(sfm[1])
-phases_test = np.angle(sfm[1, ::SpS])  # fase do sinal      -> saída desejada
-
-# %%
-X_train = amplitudes_train.reshape(-1, SpS)[:5000]
-X_test = amplitudes_test.reshape(-1, SpS)[:5000]
-
-# %%
-y_train = phases_train.reshape(-1, 1)[:5000]
-
-y_test = phases_test.reshape(-1, 1)[:5000]
-
+y_train = dataset_train[data_shape-1].values.reshape(-1, 1)
+y_test = dataset_test[data_shape-1].values.reshape(-1, 1)
 # %%
 scaler = MinMaxScaler()
-#scaler = StandardScaler()
 
 # %%
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 # %%
-forest = RandomForestRegressor(200)
+forest = RandomForestRegressor(1024)
 forest.fit(X_train, y_train)
 # %%
 y_preds = forest.predict(X_test)
@@ -85,3 +54,5 @@ plt.legend(['True phases', 'predicted phases'])
 plt.title('True and predicted phases comparison')
 plt.grid(True)
 plt.show()
+
+# %%

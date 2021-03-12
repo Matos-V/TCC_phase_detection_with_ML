@@ -26,8 +26,8 @@ plt.rcParams['font.size'] = 18
 plt.rcParams['figure.figsize'] = [16, 8]
 plt.rcParams['lines.linewidth'] = 2
 # %%
-dataset_train = pd.read_pickle('Testes_sinais_digitais/dataset_train_01.pkl')
-dataset_test = pd.read_pickle('Testes_sinais_digitais/dataset_test_01.pkl')
+dataset_train = pd.read_pickle('Testes_sinais_digitais/dataset_train_03.pkl')
+dataset_test = pd.read_pickle('Testes_sinais_digitais/dataset_test_03.pkl')
 data_shape = dataset_train.shape[-1]
 num_features = data_shape-1
 
@@ -51,8 +51,14 @@ stop = EarlyStopping(monitor='val_loss', patience=5)
 # %%
 # define model
 model = Sequential()
-model.add(Dense(200, activation='relu', input_shape=(num_features,)))
-model.add(Dense(200, activation='relu'))
+model.add(Dense(100, activation='relu', input_shape=(num_features,)))
+model.add(Dense(100, activation='relu'))
+Dropout(0.5)
+model.add(Dense(100, activation='relu'))
+Dropout(0.5)
+model.add(Dense(100, activation='relu'))
+Dropout(0.5)
+model.add(Dense(100, activation='relu'))
 Dropout(0.5)
 
 model.add(Dense(1))
