@@ -7,9 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from sklearn.neighbors import KNeighborsRegressor
 
 # %%
 plt.rcParams['font.size'] = 18
@@ -59,55 +56,9 @@ X_test = amplitudes_test.reshape(-1, SpS)[:5000]
 y_train = phases_train.reshape(-1, 1)[:5000]
 
 y_test = phases_test.reshape(-1, 1)[:5000]
-
 # %%
-scaler = MinMaxScaler()
-#scaler = StandardScaler()
-
+dataset_train = np.concatenate((X_train, y_train), axis=1)
+dataset_test = np.concatenate((X_test, y_test), axis=1)
 # %%
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-# %%
-n_neighbors = 5
-
-for i, weights in enumerate(['uniform', 'distance']):
-    knn = KNeighborsRegressor(n_neighbors, weights=weights)
-    y_preds = knn.fit(X_train, y_train).predict(X_test)
-    print('rmse = ', np.sqrt(mean_squared_error(y_test, y_preds)))
-    print('r2 = ', r2_score(y_test, y_preds))
-
-    plt.subplot(2, 1, i + 1)
-    plt.plot(y_test[:50], color='darkorange', label='data',)
-    plt.plot(y_preds[:50], color='navy', label='prediction')
-    plt.axis('tight')
-    plt.legend()
-    plt.title("KNeighborsRegressor (k = %i, weights = '%s')" % (n_neighbors,
-                                                                weights))
-# %%
-r2 = []
-for n_neighbors in range(1, 30):
-    knn = KNeighborsRegressor(n_neighbors, weights='distance',)
-    y_preds = knn.fit(X_train, y_train).predict(X_test)
-    score = r2_score(y_test, y_preds)
-    r2.append(score)
-r2 = np.array(r2)
-plt.plot(r2)
-plt.grid(True)
-max_r2 = np.max(r2)
-best_neighbors = np.argmax(r2)+1
-plt.legend([f'r2 max = {max_r2}'])
-# %%
-print('rmse = ', np.sqrt(mean_squared_error(y_test, y_preds)))
-print('r2 = ', r2_score(y_test, y_preds))
-# %%
-plt.figure(figsize=(16, 8))
-plt.plot(y_test[:50], '-o')
-plt.plot(y_preds[:50], '-o')
-plt.xlabel('Symbol')
-plt.ylabel('phase (rad)')
-plt.legend(['True phases', 'predicted phases'])
-plt.title('True and predicted phases comparison')
-plt.grid(True)
-plt.show()
-
-# %%
+pd.DataFrame(dataset_train).to_pickle('dataset_train_02.pkl')
+pd.DataFrame(dataset_test).to_pickle('dataset_test_02.pkl')

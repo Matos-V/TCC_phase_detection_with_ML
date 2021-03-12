@@ -86,12 +86,14 @@ sfm = A + sfilt*np.exp(1j*Δf)
 # %%
 n_features = SpS*1
 # valor absoluto do sinal -> entrada da rede
-amplitudes_train = np.abs(sfm[0,])
-phases_train = np.angle(sfm[0, n_features::n_features])  # fase do sinal     -> saída desejada
+amplitudes_train = np.abs(sfm[0, ])
+# fase do sinal     -> saída desejada
+phases_train = np.angle(sfm[0, n_features::n_features])
 
 # valor absoluto do sinal  -> entrada da rede
-amplitudes_test = np.abs(sfm[1,])
-phases_test = np.angle(sfm[1, n_features::n_features])  # fase do sinal      -> saída desejada
+amplitudes_test = np.abs(sfm[1, ])
+# fase do sinal      -> saída desejada
+phases_test = np.angle(sfm[1, n_features::n_features])
 
 L = 10
 # fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(16, 12))
@@ -117,9 +119,9 @@ y_train = phases_train.reshape(-1, 1)[:size]
 
 y_test = phases_test.reshape(-1, 1)[:size]
 
-#%%
-dataset_train = np.concatenate((X_train,y_train),axis=1)
-dataset_test = np.concatenate((X_test,y_test),axis=1)
+# %%
+dataset_train = np.concatenate((X_train, y_train), axis=1)
+dataset_test = np.concatenate((X_test, y_test), axis=1)
 # %%
 pd.DataFrame(dataset_train).to_pickle('dataset_train_01.pkl')
 pd.DataFrame(dataset_test).to_pickle('dataset_test_01.pkl')

@@ -216,7 +216,7 @@ y_test = phases_test.reshape(-1, 1)[:5000]
 print(pd.DataFrame(y_test).describe())
 
 # %%
-sns.histplot(pd.DataFrame(y_test),bins=50)
+sns.histplot(pd.DataFrame(y_test), bins=50)
 
 # %%
 dataset_train = np.concatenate((X_train, y_train), axis=1)
@@ -236,7 +236,7 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
 # %%
-stop = EarlyStopping(monitor='val_loss',patience=5)
+stop = EarlyStopping(monitor='val_loss', patience=5)
 # %%
 # define model
 model = Sequential()
@@ -260,7 +260,7 @@ plt.grid(True)
 # %%
 preds = model.predict(X_test)
 # %%
-test = np.concatenate((preds,y_test),axis=1)
+test = np.concatenate((preds, y_test), axis=1)
 print(test[:5])
 
 # %%

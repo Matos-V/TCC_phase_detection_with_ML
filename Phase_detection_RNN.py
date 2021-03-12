@@ -35,7 +35,7 @@ from tensorflow.keras.preprocessing.sequence import TimeseriesGenerator
 
 # %%
 plt.rcParams['font.size'] = 18
-plt.rcParams['figure.figsize'] = [16,8]
+plt.rcParams['figure.figsize'] = [16, 8]
 plt.rcParams['lines.linewidth'] = 2
 
 # %%

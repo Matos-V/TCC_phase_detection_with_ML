@@ -1,4 +1,4 @@
-#%%
+# %%
 from qampy import signals, impairments, equalisation, phaserec, helpers
 from qampy.theory import ber_vs_es_over_n0_qam as ber_theory
 from qampy.helpers import normalise_and_center as normcenter
@@ -67,7 +67,7 @@ scaler = MinMaxScaler()
 # %%
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
-#%%
+# %%
 forest = RandomForestRegressor(200)
 forest.fit(X_train, y_train)
 # %%
