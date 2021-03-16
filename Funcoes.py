@@ -6,7 +6,8 @@ import numpy as np
 from collections.abc import Sequence
 
 
-def signal_phase_min(M:int,Fb:int,SpS:int, SRN:float) -> np.ndarray:
+def signal_phase_min(M:int,Fb:int,SpS:int, SNR:float,rolloff = 0.01):
+    Fs = SpS*Fb
     s = signals.ResampledQAM(M, 2**16, fb=Fb, fs=Fs, nmodes=1,
                          resamplekwargs={"beta": rolloff, "renormalise": True})
     s = impairments.simulate_transmission(s, snr=SNR)
@@ -19,21 +20,20 @@ def signal_phase_min(M:int,Fb:int,SpS:int, SRN:float) -> np.ndarray:
 
     return sfm
 
-def abs_and_phases(sfm:np.ndarray) -> dict[np.ndarray,np.ndarray]:
-    amplitudes = np.abs(sfm[0])
-    phases = np.angle(sfm[0])
+def abs_and_phases(sfm):
+    amplitudes = np.abs(sfm.copy()[0])
+    phases = np.angle(sfm.copy()[0])
     return {'amplitudes':amplitudes, 'phases':phases}
 
-r1 = dict[np.ndarray,np.ndarray]
-r2 = dict[np.ndarray,np.ndarray]
-R = list[r1,r2]
-def dataset_01(sfm: np.ndarray, n_features:int) -> Sequence[R]:
+def dataset_01(sfm, n_features):
     size = 3000
-    data = abs_and_phases()
+    data = abs_and_phases(sfm)
     amplitudes = data['amplitudes'].copy()
     phases = data['phases'].copy()
-    X = np.zeros(size,n_features)
+    X = np.zeros((size,n_features))
     for n in range(size):
         aux = amplitudes[n:n_features+n]
         X[n] = aux
-    y = phases[n_features-1:size+n_features]
+    y = phases[n_features-1:size+n_features-1]
+
+    return data,X,y
