@@ -68,7 +68,7 @@ def dataset_01(sfm, ordem: int):
         y (np.ndarray): Vetor coluna contendo as informações de fases do sinal dispostas de tal 
             forma que qualquer algorítmo de regressão de ML pode utilizar como features.
     """
-    size = 3000
+    size = 60000
     data = abs_and_phases(sfm)
     amplitudes = data['amplitudes'].copy()
     phases = data['phases'].copy()
@@ -77,5 +77,7 @@ def dataset_01(sfm, ordem: int):
         aux = amplitudes[n:ordem+n]
         X[n] = aux
     y = phases[ordem-1:size+ordem-1]
+    data['amplitudes'] = data['amplitudes'][ordem-1:size+ordem-1]
+    data['phases'] = data['phases'][ordem-1:size+ordem-1]
 
-    return data, X, y.reshape(-1,1)
+    return data, X, y.reshape(-1,)

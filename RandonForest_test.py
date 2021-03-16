@@ -9,6 +9,10 @@
 #       format_name: percent
 #       format_version: '1.3'
 #       jupytext_version: 1.10.2
+#   kernelspec:
+#     display_name: Python 3
+#     language: python
+#     name: python3
 # ---
 
 # %%
@@ -24,31 +28,42 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 
+from Funcoes import *
+
+# %%
+# %matplotlib inline
+
 # %%
 plt.rcParams['font.size'] = 18
 plt.rcParams['figure.figsize'] = [16, 8]
 plt.rcParams['lines.linewidth'] = 2
 
 # %%
-dataset_train = pd.read_pickle('Testes_sinais_digitais/dataset_train_03.pkl')
-dataset_test = pd.read_pickle('Testes_sinais_digitais/dataset_test_03.pkl')
-data_shape = dataset_train.shape[-1]
-num_features = data_shape-1
+M = 64        # ordem da modulação
+Fb = 40e9      # taxa de símbolos
+SpS = 4         # amostras por símbolo
+Fs = SpS*Fb    # taxa de amostragem
+SNR = 40        # relação sinal ruído (dB)
+rolloff = 0.01  # Rolloff do filtro formatador de pulso
+sfm = qam_signal_phase_min(M,Fb,SpS,SNR)
+ordem = 4
+dataset , X , y = dataset_01(sfm,ordem)
 
 # %%
-X_train = dataset_train.drop(
-    data_shape-1, axis=1).values.reshape(-1, num_features)
-X_test = dataset_test.drop(
-    data_shape-1, axis=1).values.reshape(-1, num_features)
+X_train = X[:50000]
+X_test = X[50000:]
 
-y_train = dataset_train[data_shape-1].values.reshape(-1, 1)
-y_test = dataset_test[data_shape-1].values.reshape(-1, 1)
+y_train = y[:50000]
+y_test = y[50000:]
 # %%
 scaler = MinMaxScaler()
 
 # %%
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
+# %%
+y_train.shape
+
 # %%
 forest = RandomForestRegressor(200)
 forest.fit(X_train, y_train)
@@ -69,22 +84,20 @@ plt.grid(True)
 plt.show()
 
 # %%
-M = 64        # ordem da modulação
-Fb = 40e9      # taxa de símbolos
-SpS = 4         # amostras por símbolo
-Fs = SpS*Fb    # taxa de amostragem
-SNR = 40        # relação sinal ruído (dB)
-rolloff = 0.01  # Rolloff do filtro formatador de pulso
-# %%
 sig_abs = scaler.inverse_transform(X_test)[:].reshape((-1))
 size = sig_abs.shape[0]
-sinal = sig_abs*np.exp(1j*y_test.reshape(-1))
 # %%
-t = np.arange(0, s[0].size)*1/Fs
-
-A = (np.max(np.abs(sfilt)))*np.exp(1j*np.deg2rad(45))
-Δf = 2*np.pi*(sfilt.fb/2)*t
-sfm = A + sfilt*np.exp(1j*Δf)
+dataset['amplitudes'].shape
 
 # %%
-signals.from_
+y_preds.shape
+
+# %%
+sinal = dataset['amplitudes'][50000:]*np.exp(1j*y_preds)
+# %%
+sinal.shape
+
+# %%
+plt.magnitude_spectrum(sinal, Fs=Fs, scale='dB')
+
+# %%
