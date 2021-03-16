@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     formats: ipynb,py:percent
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.10.2
+# ---
+
 # %%
 from qampy import signals, impairments, equalisation, phaserec, helpers
 from qampy.theory import ber_vs_es_over_n0_qam as ber_theory
@@ -55,7 +68,7 @@ plt.title('True and predicted phases comparison')
 plt.grid(True)
 plt.show()
 
-#%%
+# %%
 M = 64        # ordem da modulação
 Fb = 40e9      # taxa de símbolos
 SpS = 4         # amostras por símbolo
@@ -66,12 +79,12 @@ rolloff = 0.01  # Rolloff do filtro formatador de pulso
 sig_abs = scaler.inverse_transform(X_test)[:].reshape((-1))
 size = sig_abs.shape[0]
 sinal = sig_abs*np.exp(1j*y_test.reshape(-1))
-#%%
+# %%
 t = np.arange(0, s[0].size)*1/Fs
 
 A = (np.max(np.abs(sfilt)))*np.exp(1j*np.deg2rad(45))
 Δf = 2*np.pi*(sfilt.fb/2)*t
 sfm = A + sfilt*np.exp(1j*Δf)
 
-#%%
+# %%
 signals.from_

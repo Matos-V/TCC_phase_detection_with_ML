@@ -1,3 +1,15 @@
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     formats: ipynb,py:percent
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.10.2
+# ---
+
 # %%
 from qampy import signals, impairments, equalisation, phaserec, helpers
 from qampy.theory import ber_vs_es_over_n0_qam as ber_theory
@@ -70,7 +82,7 @@ plt.title(f'r2 max = {np.round(max_r2,2)}')
 
 knn = KNeighborsRegressor(best_neighbors, weights='distance',)
 y_preds = knn.fit(X_train, y_train).predict(X_test)
-#%%
+# %%
 print('rmse = ', np.sqrt(mean_squared_error(y_test, y_preds)))
 print('r2 = ', r2_score(y_test, y_preds))
 # %%
