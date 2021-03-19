@@ -46,8 +46,8 @@ Fs = SpS*Fb    # taxa de amostragem
 SNR = 40        # relação sinal ruído (dB)
 rolloff = 0.01  # Rolloff do filtro formatador de pulso
 sfm = qam_signal_phase_min(M,Fb,SpS,SNR)
-ordem = 4
-dataset , X , y = dataset_01(sfm,ordem)
+ordem = 16
+dataset , X , y = dataset_02(sfm,ordem)
 
 # %%
 X_train = X[:50000]
@@ -65,7 +65,7 @@ X_test = scaler.transform(X_test)
 y_train.shape
 
 # %%
-forest = RandomForestRegressor(200)
+forest = RandomForestRegressor(100)
 forest.fit(X_train, y_train)
 # %%
 y_preds = forest.predict(X_test)
