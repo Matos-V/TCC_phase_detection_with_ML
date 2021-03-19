@@ -41,8 +41,8 @@ Fs = SpS*Fb    # taxa de amostragem
 SNR = 40        # relação sinal ruído (dB)
 rolloff = 0.01  # Rolloff do filtro formatador de pulso
 sfm = qam_signal_phase_min(M,Fb,SpS,SNR)
-ordem = 64
-dataset , X , y = dataset_01(sfm,ordem)
+ordem = 128
+dataset , X , y = dataset_02(sfm,ordem)
 
 # %%
 X_train = X[:50000]
@@ -62,8 +62,8 @@ stop = EarlyStopping(monitor='val_loss', patience=5)
 # %%
 # define model
 model = Sequential()
-model.add(Dense(100, activation='relu', input_shape=(ordem,)))
-model.add(Dense(100, activation='relu'))
+model.add(Dense(128, activation='relu', input_shape=(ordem,)))
+model.add(Dense(128, activation='relu'))
 Dropout(0.5)
 
 model.add(Dense(1))
@@ -107,8 +107,23 @@ preds.shape
 sinal.shape
 
 # %%
-plt.magnitude_spectrum(sinal[1:], Fs=Fs, scale='dB')
-
+plt.figure(dpi=100, facecolor='w', edgecolor='k')
+plt.magnitude_spectrum(sinal, Fs=Fs, scale='dB', color='C1')
+plt.title('QAM signal spectrum after phase detection')
+plt.grid(True)
+#%%
+plt.figure(figsize=(8, 6), dpi=100, facecolor='w', edgecolor='k')
+plt.magnitude_spectrum(sfm[0], Fs=Fs, scale='dB', color='C1')
+plt.title('QAM signal spectrum after PM operation')
+plt.grid(True)
 # %%
-
+plt.figure(figsize=(16, 8))
+plt.plot(sinal.real[::SpS], sinal.imag[::SpS], linestyle='-', marker='o',
+         markerfacecolor='tab:red',
+         markeredgecolor='tab:red')
+plt.legend(['recieved signal'], loc='lower right')
+plt.xlabel('real')
+plt.ylabel('imag')
+plt.title('Constelation after PM operation')
+plt.grid(True)
 # %%
