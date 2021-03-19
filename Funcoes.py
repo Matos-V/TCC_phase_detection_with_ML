@@ -108,9 +108,9 @@ def dataset_02(sfm, ordem: int):
     for n in range(size):
         aux = amplitudes[n:ordem+n]
         X[n] = aux
-    y = phases[int(ordem/2):size+int(ordem/2)-1]
-    data['amplitudes'] = data['amplitudes'][int(ordem/2):size+int(ordem/2)-1]
-    data['phases'] = data['phases'][int(ordem/2):size+int(ordem/2)-1]
+    y = phases[int(ordem/2):size+int(ordem/2)]
+    data['amplitudes'] = data['amplitudes'][int(ordem/2):size+int(ordem/2)]
+    data['phases'] = data['phases'][int(ordem/2):size+int(ordem/2)]
 
     return data, X, y
 
