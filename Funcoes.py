@@ -82,6 +82,7 @@ def dataset_01(sfm, ordem: int):
 
     return data, X, y.reshape(-1,)
 
+
 def dataset_02(sfm, ordem: int):
     """O dataset criado pela função é o resultado de uma convolução simples ao longo
     do vetor das amplitudes, para a criação das features, e a fase correspondente à
@@ -114,6 +115,7 @@ def dataset_02(sfm, ordem: int):
 
     return data, X, y
 
+
 def dataset_03(sfm, ordem: int):
     """O dataset criado pela função é o resultado de uma convolução simples ao longo
     do vetor das amplitudes, para a criação das features, e a fase correspondente à
@@ -140,6 +142,40 @@ def dataset_03(sfm, ordem: int):
     for n in range(size):
         aux = amplitudes[n:ordem+n]
         X[n] = aux
+    y = phases[:size]
+    data['amplitudes'] = data['amplitudes'][:size]
+    data['phases'] = data['phases'][:size]
+
+    return data, X, y.reshape(-1,)
+
+
+def dataset_02_CNN(sfm, ordem: int):
+    """O dataset criado pela função é o resultado de uma convolução simples ao longo
+    do vetor das amplitudes, para a criação das features, e a fase correspondente à
+    primeira amostra de amplitude em cada passo da convolução.
+
+    Args:
+        sfm (ResampledQAM: np.ndarray): Símbolos do sinal QAM a ser observado.
+        ordem (int): Número de amostras de amplitudes a serem observadas para a análise
+            de uma amostra de fase.
+
+    Returns:
+        data (dict[np.ndarray, np.ndarray]): Dicionário com os arrays contendo as informações de
+            amplitudes e fases do sinal.
+        X (np.ndarray): Matriz contendo as informações de amplitudes do sinal dispostas de tal 
+            forma que qualquer algorítmo de regressão de ML pode utilizar como features.
+        y (np.ndarray): Vetor coluna contendo as informações de fases do sinal dispostas de tal 
+            forma que qualquer algorítmo de regressão de ML pode utilizar como features.
+    """
+    size = 60000
+    data = abs_and_phases(sfm)
+    amplitudes = data['amplitudes'].copy()
+    phases = data['phases'].copy()
+    X = np.zeros((size, ordem, ordem))
+    for n in range(size):
+        aux = amplitudes[n:int(ordem*ordem)+n].reshape(ordem,ordem)
+        X[n] = aux
+    X = X.reshape((size,ordem,ordem,1))
     y = phases[:size]
     data['amplitudes'] = data['amplitudes'][:size]
     data['phases'] = data['phases'][:size]
