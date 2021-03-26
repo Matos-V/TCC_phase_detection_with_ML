@@ -4,6 +4,7 @@ from qampy.helpers import normalise_and_center as normcenter
 from qampy.core.filter import rrcos_pulseshaping as lowpassFilter
 import numpy as np
 from collections.abc import Sequence
+import matplotlib.pyplot as plt
 
 
 def qam_signal_phase_min(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
@@ -181,3 +182,18 @@ def dataset_02_CNN(sfm, ordem: int):
     data['phases'] = data['phases'][:size]
 
     return data, X, y.reshape(-1,)
+
+def plot_constelação(sinal):
+    plt.figure(figsize=(16, 8))
+    plt.plot(sinal.real, sinal.imag, linestyle='-', marker='o',
+            markerfacecolor='tab:red',
+            markeredgecolor='tab:red')
+    plt.xlabel('real')
+    plt.ylabel('imaginário')
+    plt.title('Constelação do sinal')
+    plt.grid(True)
+
+def plot_espectro(sinal):
+    plt.figure(figsize=(8, 6), dpi=100, facecolor='w', edgecolor='k')
+    plt.magnitude_spectrum(sinal, Fs=sinal.fs, scale='dB', color='C1')
+    plt.grid(True)
