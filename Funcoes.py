@@ -35,10 +35,11 @@ def sinal_qam_fase_min(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
 
 def reverter_sinal_fase_min(sinal):
     sinal_fase_min = sinal.copy()
-    t = np.arange(0, sinal_fase_min.size)*1/sinal_fase_min.fs
-    A = (np.max(np.abs(sinal_fase_min)) + np.min(np.abs(sinal_fase_min)))/2*np.exp(1j*np.deg2rad(45))
+    t = np.arange(0, sinal_fase_min[0].size)*1/sinal_fase_min.fs
+    A = ((np.max(np.abs(sinal_fase_min)) + np.min(np.abs(sinal_fase_min)))/2)*np.exp(1j*np.deg2rad(45))
     Δf = 2*np.pi*(sinal_fase_min.fb/2)*t
     sinal_revertido = (sinal_fase_min - A)/np.exp(1j*Δf)
+    return sinal_revertido
 
 def abs_and_phases(sfm):
     """ Divisão do sinal em fase mínima em componentes de amplitudes e fases.
@@ -191,15 +192,17 @@ def dataset_02_CNN(sfm, ordem: int):
 
 def plot_constelação(sinal):
     plt.figure(figsize=(16, 8))
-    plt.plot(sinal.real, sinal.imag, linestyle='-', marker='o',
+    plt.plot(sinal[0,:5000].real, sinal[0,:5000].imag, linestyle='-', marker='o',
             markerfacecolor='tab:red',
             markeredgecolor='tab:red')
     plt.xlabel('real')
     plt.ylabel('imaginário')
     plt.title('Constelação do sinal')
     plt.grid(True)
+    plt.show()
 
 def plot_espectro(sinal):
-    plt.figure(figsize=(8, 6), dpi=100, facecolor='w', edgecolor='k')
-    plt.magnitude_spectrum(sinal, Fs=sinal.fs, scale='dB', color='C1')
+    plt.figure(figsize=(16, 8), dpi=100, facecolor='w', edgecolor='k')
+    plt.magnitude_spectrum(sinal[0,:5000], Fs=sinal.fs, scale='dB', color='C1')
     plt.grid(True)
+    plt.show()
