@@ -7,7 +7,7 @@ from collections.abc import Sequence
 import matplotlib.pyplot as plt
 
 
-def qam_signal_phase_min(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
+def sinal_qam_fase_min(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
     """Criação do sinal QAM em fase mínima.
 
     Args:
@@ -33,6 +33,12 @@ def qam_signal_phase_min(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
 
     return sfm
 
+def reverter_sinal_fase_min(sinal):
+    sinal_fase_min = sinal.copy()
+    t = np.arange(0, sinal_fase_min.size)*1/sinal_fase_min.fs
+    A = (np.max(np.abs(sinal_fase_min)) + np.min(np.abs(sinal_fase_min)))/2*np.exp(1j*np.deg2rad(45))
+    Δf = 2*np.pi*(sinal_fase_min.fb/2)*t
+    sinal_revertido = (sinal_fase_min - A)/np.exp(1j*Δf)
 
 def abs_and_phases(sfm):
     """ Divisão do sinal em fase mínima em componentes de amplitudes e fases.
