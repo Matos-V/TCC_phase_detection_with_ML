@@ -51,28 +51,21 @@ for M in [4 , 8 , 16 , 32 , 64 , 128]:
     model.compile(optimizer='adam', loss='mse')
     model.fit(X_train, y_train, epochs=300, callbacks=[stop],
             validation_data=(X_test, y_test), batch_size=64,verbose=2)
-    preds = model.predict(X_test)
-    sinal = (dataset['amplitudes'][50000:]*np.exp(1j*preds.reshape(-1,))).reshape(1,-1)
-    sinal_revertido = reverter_sinal_fase_min(sinal ,A)
+    predicoes = model.predict(X_test)
+    sinal_predito = (dataset['amplitudes'][50000:]*np.exp(1j*predicoes.reshape(-1,))).reshape(1,-1)
+    sinal_predito_revertido = reverter_sinal_fase_min(sinal_predito ,A).reshape(1,-1)
+    sinal_predito_filtrado = normcenter(lowpassFilter(sinal_predito_revertido, Fs, 1/Fb, 0.001, taps=4001))
+    sinal_base_revertido = reverter_sinal_fase_min(sfm,A)
     teste = str(M) + ' QAM'
-    resultados[teste] = (sfm, sinal_revertido.reshape(1,-1))
+    resultados[teste] = {'Sinais fase minima':(sfm, sinal_predito),
+                         'Sinais revertidos':(sinal_base_revertido,sinal_predito_revertido),
+                         'Sinal predito filtrado':(sinal_predito_filtrado)}
     print('\n\n')
 print(' FIM ')
-# %%
-resultados['128 QAM'][-1][:,::SpS].cal_ber()
-# %%
-10*np.log10(resultados['4 QAM'][-1][:,::SpS].est_snr())
+
 #%%
-QAM64 = normcenter(lowpassFilter(resultados['64 QAM'][-1], Fs, 1/Fb, 0.001, taps=4001))
-# %%
-plot_constelação(QAM64[:,::SpS])
-# %%
-plot_constelação(resultados['64 QAM'][-1][:,::SpS])
-# %%
-QAM64[:,::SpS].cal_ber()
-#%%
-# nome_arquivo = 'Result_dif_ordens_QAM.pkl'
-# arquivo = open(nome_arquivo,'wb')
-# pickle.dump(resultados,arquivo)
-# arquivo.close()
+nome_arquivo = 'Result_dif_ordens_QAM.pkl'
+arquivo = open(nome_arquivo,'wb')
+pickle.dump(resultados,arquivo)
+arquivo.close()
 # %%
