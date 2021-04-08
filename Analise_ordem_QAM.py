@@ -10,6 +10,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping
 import tensorflow as tf
 from Funcoes import *
+import pickle
 # %%
 # %matplotlib inline
 # %%
@@ -69,4 +70,9 @@ plot_constelação(QAM64[:,::SpS])
 plot_constelação(resultados['64 QAM'][-1][:,::SpS])
 # %%
 QAM64[:,::SpS].cal_ber()
+#%%
+# nome_arquivo = 'Result_dif_ordens_QAM.pkl'
+# arquivo = open(nome_arquivo,'wb')
+# pickle.dump(resultados,arquivo)
+# arquivo.close()
 # %%
