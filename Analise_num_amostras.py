@@ -19,17 +19,17 @@ plt.rcParams['figure.figsize'] = [16, 8]
 plt.rcParams['lines.linewidth'] = 2
 # %%
 resultados = dict()
-for M in [4 , 8 , 16 , 32 , 64 , 128]:
-    print(f'{"#"*20} {M} QAM {"#"*20}')
-    #M = 64        # ordem da modulação
+for amostras in [2**x for x in range(5,11)]:
+    print(f'{"#"*20} {amostras} Amostras {"#"*20}')
+    M = 16        # ordem da modulação
     Fb = 40e9      # taxa de símbolos
     SpS = 4         # amostras por símbolo
     Fs = SpS*Fb    # taxa de amostragem
     SNR = 40        # relação sinal ruído (dB)
     rolloff = 0.01  # Rolloff do filtro formatador de pulso
     sfm, A = sinal_qam_fase_min(M,Fb,SpS,SNR)
-    ordem = 128
-    dataset , X , y = dataset_02(sfm,ordem)
+    #amostras = 128
+    dataset , X , y = dataset_02(sfm,amostras)
 
     X_train = X[:50000]
     X_test = X[50000:]
@@ -43,7 +43,7 @@ for M in [4 , 8 , 16 , 32 , 64 , 128]:
 
     stop = EarlyStopping(monitor='val_loss', patience=5)
     model = Sequential()
-    model.add(Dense(128, activation='relu', input_shape=(ordem,)))
+    model.add(Dense(128, activation='relu', input_shape=(amostras,)))
     model.add(Dense(128, activation='relu'))
     Dropout(0.5)
 
@@ -56,7 +56,7 @@ for M in [4 , 8 , 16 , 32 , 64 , 128]:
     sinal_predito_revertido = reverter_sinal_fase_min(sinal_predito ,A).reshape(1,-1)
     sinal_predito_filtrado = normcenter(lowpassFilter(sinal_predito_revertido, Fs, 1/Fb, 0.001, taps=4001))
     sinal_base_revertido = reverter_sinal_fase_min(sfm[:,50000:60001],A)
-    teste = str(M) + ' QAM'
+    teste = str(amostras) + ' Amostras'
     resultados[teste] = {'Sinais fase minima':(sfm[:,50000:60001], sinal_predito),
                          'Sinais revertidos':(sinal_base_revertido,sinal_predito_revertido),
                          'Sinal predito filtrado':(sinal_predito_filtrado)}
@@ -64,8 +64,7 @@ for M in [4 , 8 , 16 , 32 , 64 , 128]:
 print(' FIM ')
 
 #%%
-nome_arquivo = 'Result_dif_ordens_QAM.pkl'
-arquivo = open(nome_arquivo,'wb')
-pickle.dump(resultados,arquivo)
-arquivo.close()
-# %%
+# nome_arquivo = 'Result_dif_num_amostras.pkl'
+# arquivo = open(nome_arquivo,'wb')
+# pickle.dump(resultados,arquivo)
+# arquivo.close()
