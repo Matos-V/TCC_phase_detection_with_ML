@@ -4,9 +4,10 @@ from qampy.helpers import normalise_and_center as normcenter
 from qampy.core.filter import rrcos_pulseshaping as lowpassFilter
 import numpy as np
 from collections.abc import Sequence
+import matplotlib.pyplot as plt
 
 
-def qam_signal_phase_min(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
+def sinal_qam_fase_min(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
     """Criação do sinal QAM em fase mínima.
 
     Args:
@@ -30,8 +31,14 @@ def qam_signal_phase_min(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
     Δf = 2*np.pi*(sfilt.fb/2)*t
     sfm = A + sfilt*np.exp(1j*Δf)
 
-    return sfm
+    return sfm , A
 
+def reverter_sinal_fase_min(sinal, A):
+    sinal_fase_min = sinal.copy()
+    t = np.arange(0, sinal_fase_min[0].size)*1/sinal_fase_min.fs
+    Δf = 2*np.pi*(sinal_fase_min.fb/2)*t
+    sinal_revertido = (sinal_fase_min - A)/np.exp(1j*Δf)
+    return sinal_revertido
 
 def abs_and_phases(sfm):
     """ Divisão do sinal em fase mínima em componentes de amplitudes e fases.
@@ -82,6 +89,7 @@ def dataset_01(sfm, ordem: int):
 
     return data, X, y.reshape(-1,)
 
+
 def dataset_02(sfm, ordem: int):
     """O dataset criado pela função é o resultado de uma convolução simples ao longo
     do vetor das amplitudes, para a criação das features, e a fase correspondente à
@@ -114,6 +122,7 @@ def dataset_02(sfm, ordem: int):
 
     return data, X, y
 
+
 def dataset_03(sfm, ordem: int):
     """O dataset criado pela função é o resultado de uma convolução simples ao longo
     do vetor das amplitudes, para a criação das features, e a fase correspondente à
@@ -145,3 +154,52 @@ def dataset_03(sfm, ordem: int):
     data['phases'] = data['phases'][:size]
 
     return data, X, y.reshape(-1,)
+
+
+def dataset_02_CNN(sfm, ordem: int):
+    """O dataset criado pela função é o resultado de uma convolução simples ao longo
+    do vetor das amplitudes, para a criação das features, e a fase correspondente à
+    primeira amostra de amplitude em cada passo da convolução.
+
+    Args:
+        sfm (ResampledQAM: np.ndarray): Símbolos do sinal QAM a ser observado.
+        ordem (int): Número de amostras de amplitudes a serem observadas para a análise
+            de uma amostra de fase.
+
+    Returns:
+        data (dict[np.ndarray, np.ndarray]): Dicionário com os arrays contendo as informações de
+            amplitudes e fases do sinal.
+        X (np.ndarray): Matriz contendo as informações de amplitudes do sinal dispostas de tal 
+            forma que qualquer algorítmo de regressão de ML pode utilizar como features.
+        y (np.ndarray): Vetor coluna contendo as informações de fases do sinal dispostas de tal 
+            forma que qualquer algorítmo de regressão de ML pode utilizar como features.
+    """
+    size = 60000
+    data = abs_and_phases(sfm)
+    amplitudes = data['amplitudes'].copy()
+    phases = data['phases'].copy()
+    X = np.zeros((size, ordem, ordem))
+    for n in range(size):
+        aux = amplitudes[n:int(ordem*ordem)+n].reshape(ordem,ordem)
+        X[n] = aux
+    X = X.reshape((size,ordem,ordem,1))
+    y = phases[:size]
+    data['amplitudes'] = data['amplitudes'][:size]
+    data['phases'] = data['phases'][:size]
+
+    return data, X, y.reshape(-1,)
+
+def plot_constelação(sinal):
+    plt.figure(figsize=(16, 8))
+    plt.plot(sinal[0,:5000].real, sinal[0,:5000].imag, 'o')
+    plt.xlabel('real')
+    plt.ylabel('imaginário')
+    plt.title('Constelação do sinal')
+    plt.grid(True)
+    plt.show()
+
+def plot_espectro(sinal):
+    plt.figure(figsize=(16, 8), dpi=100, facecolor='w', edgecolor='k')
+    plt.magnitude_spectrum(sinal[0,:5000], Fs=sinal.fs, scale='dB', color='C1')
+    plt.grid(True)
+    plt.show()
