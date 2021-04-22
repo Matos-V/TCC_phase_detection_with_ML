@@ -1,20 +1,3 @@
-# -*- coding: utf-8 -*-
-# ---
-# jupyter:
-#   jupytext:
-#     cell_metadata_filter: -all
-#     formats: ipynb,py:percent
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.10.2
-#   kernelspec:
-#     display_name: 'Python 3.7.10 64-bit (''corazon'': conda)'
-#     language: python
-#     name: python3710jvsc74a57bd0c496fa0ca3d44b01f02024792506ac79e5cf076c0dbe768da159d2fa8002671f
-# ---
-
 # %%
 import numpy as np
 import pandas as pd
@@ -36,7 +19,7 @@ plt.rcParams['figure.figsize'] = [16, 8]
 plt.rcParams['lines.linewidth'] = 2
 # %%
 resultados = dict()
-for amostras in [2**x for x in range(8,11)]:
+for amostras in [2**x for x in range(5,11)]:
     print(f'{"#"*20} {amostras} Amostras {"#"*20}')
     M = 16        # ordem da modulação
     Fb = 40e9      # taxa de símbolos
@@ -80,28 +63,8 @@ for amostras in [2**x for x in range(8,11)]:
     print('\n\n')
 print(' FIM ')
 
-# %%
+#%%
 # nome_arquivo = 'Result_dif_num_amostras.pkl'
 # arquivo = open(nome_arquivo,'wb')
 # pickle.dump(resultados,arquivo)
 # arquivo.close()
-
-# %%
-resultados['256 Amostras'].keys()
-
-# %%
-plot_constelação(resultados['256 Amostras']['Sinal predito filtrado'][:,::4])
-
-# %%
-plt.plot(resultados['256 Amostras']['Sinais fase minima'][0][0,::].real,resultados['256 Amostras']['Sinais fase minima'][0][0,::].imag)
-plt.grid(True)
-plt.xlim([0,4.5])
-plt.ylim([0,4.5])
-
-# %%
-plt.plot(model.weights[4])
-
-# %%
-model.weights[4].
-
-# %%

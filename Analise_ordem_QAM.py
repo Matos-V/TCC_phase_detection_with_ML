@@ -1,3 +1,20 @@
+# -*- coding: utf-8 -*-
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     formats: ipynb,py:percent
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.10.2
+#   kernelspec:
+#     display_name: 'Python 3.7.10 64-bit (''corazon'': conda)'
+#     language: python
+#     name: python3710jvsc74a57bd0c496fa0ca3d44b01f02024792506ac79e5cf076c0dbe768da159d2fa8002671f
+# ---
+
 # %%
 import numpy as np
 import pandas as pd
@@ -63,7 +80,7 @@ for M in [4 , 8 , 16 , 32 , 64 , 128]:
     print('\n\n')
 print(' FIM ')
 
-#%%
+# %%
 nome_arquivo = 'Result_dif_ordens_QAM.pkl'
 arquivo = open(nome_arquivo,'wb')
 pickle.dump(resultados,arquivo)
