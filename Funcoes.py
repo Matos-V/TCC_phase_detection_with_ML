@@ -3,11 +3,16 @@ from qampy.theory import ber_vs_es_over_n0_qam as ber_theory
 from qampy.helpers import normalise_and_center as normcenter
 from qampy.core.filter import rrcos_pulseshaping as lowpassFilter
 import numpy as np
-from collections.abc import Sequence
 import matplotlib.pyplot as plt
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.callbacks import EarlyStopping
+import tensorflow as tf
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
 
 
-def sinal_qam_fase_min(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
+def generate_signal(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
     """Criação do sinal QAM em fase mínima.
 
     Args:
@@ -18,27 +23,37 @@ def sinal_qam_fase_min(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
         rolloff (float, optional): Fator de roll off do filtro cosseno levantado. Defaults to 0.01.
 
     Returns:
-        sfm (ResampledQAM: np.ndarray): Símbolos complexos do sinal QAM gerado.
+        QAM_signal (ResampledQAM: np.ndarray): Símbolos complexos do sinal QAM gerado.
     """
     Fs = SpS*Fb
-    s = signals.ResampledQAM(M, 2**16, fb=Fb, fs=Fs, nmodes=1,
+    QAM_signal = signals.ResampledQAM(M, 2**16, fb=Fb, fs=Fs, nmodes=1,
                              resamplekwargs={"beta": rolloff, "renormalise": True})
-    s = impairments.simulate_transmission(s, snr=SNR)
-    sfilt = normcenter(lowpassFilter(s, Fs, 1/Fb, 0.001, taps=4001))
-    sfm = sfilt.copy()
-    t = np.arange(0, s[0].size)*1/s.fs
-    A = (np.max(np.abs(sfilt)))*np.exp(1j*np.deg2rad(45))
-    Δf = 2*np.pi*(sfilt.fb/2)*t
-    sfm = A + sfilt*np.exp(1j*Δf)
+    QAM_signal = impairments.simulate_transmission(QAM_signal, snr=SNR)
+    QAM_signal = normcenter(lowpassFilter(QAM_signal, QAM_signal.fs, 1/QAM_signal.fb, 0.001, taps=4001))
+    return QAM_signal
+
+def qam_signal_phase_min(signal,A=None):
+    """Criação do sinal QAM em fase mínima.
+
+    Args:
+        M (int): QAM order.
+        Fb (int): Symbol rate.
+        SpS (int): samples per symbol.
+        SNR (float): Signal-to-noise relation.
+        rolloff (float, optional): Roll-off factor for a raised cossine filter. Defaults to 0.01.
+
+    Returns:
+        sfm (ResampledQAM: np.ndarray): Complex QAM symbols.
+        A (float): 
+    """
+    sfm = signal.copy()
+    t = np.arange(0, sfm[0].size)*1/sfm.fs
+    if A is None:
+      A = (np.max(np.abs(sfm)))*np.exp(1j*np.deg2rad(45))
+    Δf = 2*np.pi*(sfm.fb/2)*t
+    sfm = A + sfm*np.exp(1j*Δf)
 
     return sfm , A
-
-def reverter_sinal_fase_min(sinal, A):
-    sinal_fase_min = sinal.copy()
-    t = np.arange(0, sinal_fase_min[0].size)*1/sinal_fase_min.fs
-    Δf = 2*np.pi*(sinal_fase_min.fb/2)*t
-    sinal_revertido = (sinal_fase_min - A)/np.exp(1j*Δf)
-    return sinal_revertido
 
 def abs_and_phases(sfm):
     """ Divisão do sinal em fase mínima em componentes de amplitudes e fases.
@@ -55,7 +70,6 @@ def abs_and_phases(sfm):
     phases = np.angle(sfm.copy()[0])
     data = {'amplitudes': amplitudes, 'phases': phases}
     return data
-
 
 def dataset_01(sfm, ordem: int):
     """O dataset criado pela função é o resultado de uma convolução simples ao longo
@@ -89,8 +103,7 @@ def dataset_01(sfm, ordem: int):
 
     return data, X, y.reshape(-1,)
 
-
-def dataset_02(sfm, ordem: int):
+def dataset_02(sfm, ordem: int,size):
     """O dataset criado pela função é o resultado de uma convolução simples ao longo
     do vetor das amplitudes, para a criação das features, e a fase correspondente à
     amostra de amplitude central da janela em cada passo da convolução.
@@ -108,7 +121,6 @@ def dataset_02(sfm, ordem: int):
         y (np.ndarray): Vetor coluna contendo as informações de fases do sinal dispostas de tal 
             forma que qualquer algorítmo de regressão de ML pode utilizar como features.
     """
-    size = 60000
     data = abs_and_phases(sfm)
     amplitudes = data['amplitudes'].copy()
     phases = data['phases'].copy()
@@ -121,7 +133,6 @@ def dataset_02(sfm, ordem: int):
     data['phases'] = data['phases'][int(ordem/2):size+int(ordem/2)]
 
     return data, X, y
-
 
 def dataset_03(sfm, ordem: int):
     """O dataset criado pela função é o resultado de uma convolução simples ao longo
@@ -154,7 +165,6 @@ def dataset_03(sfm, ordem: int):
     data['phases'] = data['phases'][:size]
 
     return data, X, y.reshape(-1,)
-
 
 def dataset_02_CNN(sfm, ordem: int):
     """O dataset criado pela função é o resultado de uma convolução simples ao longo
@@ -189,16 +199,53 @@ def dataset_02_CNN(sfm, ordem: int):
 
     return data, X, y.reshape(-1,)
 
-def plot_constelação(sinal):
-    plt.figure(figsize=(16, 8))
-    plt.plot(sinal[0,:5000].real, sinal[0,:5000].imag, 'o')
+def train_test_datasets(X,y,size):
+    X_train = X[:int(0.8*size)]
+    X_test = X[int(0.8*size):]
+    y_train = y[:int(0.8*size)]
+    y_test = y[int(0.8*size):]
+
+    scaler = MinMaxScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    return X_train, y_train,X_test, y_test
+
+def ANN_model(X_train, y_train,X_test, y_test,patience = 5):
+    stop = EarlyStopping(monitor='val_loss', patience=patience)
+    model = Sequential()
+    model.add(Dense(16, activation='relu', input_shape=(X_test.shape[1],)))
+    model.add(Dense(4,activation='relu'))
+    model.add(Dense(1))
+    model.compile(optimizer='adam', loss='mse')
+    model.fit(X_train, y_train, epochs=300, callbacks=[stop],
+          validation_data=(X_test, y_test), batch_size=32)
+    return model
+
+def predict_signal(model,dataset,X_test,size):
+    preds = model.predict(X_test)
+    predicted = dataset['amplitudes'][int(0.8*size):]*np.exp(1j*preds.reshape(-1,))
+    return predicted.reshape((1,-1))
+
+def revert_sfm(sfm, A):
+    sinal_fase_min = sfm.copy()
+    t = np.arange(0, sinal_fase_min[0].size)*1/sinal_fase_min.fs
+    Δf = 2*np.pi*(sinal_fase_min.fb/2)*t
+    sinal_revertido = (sinal_fase_min[0] - A)/np.exp(1j*Δf)
+    sinal_revertido = sinal_revertido.reshape((1,-1))
+    sinal_revertido = normcenter(lowpassFilter(sinal_revertido, sinal_revertido.fs, 1/sinal_revertido.fb, 0.001, taps=4001))
+    return sinal_revertido.reshape((1,-1))
+
+def plot_constelation(sinal,SpS):
+    ber = sinal[0,::SpS].cal_ber()
+    plt.plot(sinal[0,:5000:SpS].real, sinal[0,:5000:SpS].imag, 'o')
     plt.xlabel('real')
     plt.ylabel('imaginário')
-    plt.title('Constelação do sinal')
+    plt.title(f'Signal constelation - BER = {ber}')
     plt.grid(True)
     plt.show()
 
-def plot_espectro(sinal):
+def plot_spectrum(sinal):
     plt.figure(figsize=(16, 8), dpi=100, facecolor='w', edgecolor='k')
     plt.magnitude_spectrum(sinal[0,:5000], Fs=sinal.fs, scale='dB', color='C1')
     plt.grid(True)
