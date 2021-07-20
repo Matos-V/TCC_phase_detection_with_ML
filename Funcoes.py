@@ -29,7 +29,7 @@ def generate_signal(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
     QAM_signal = signals.ResampledQAM(M, 2**16, fb=Fb, fs=Fs, nmodes=1,
                              resamplekwargs={"beta": rolloff, "renormalise": True})
     QAM_signal = impairments.simulate_transmission(QAM_signal, snr=SNR)
-    QAM_signal = normcenter(lowpassFilter(QAM_signal, QAM_signal.fs, 1/QAM_signal.fb, 0.001, taps=4001))
+
     return QAM_signal
 
 def qam_signal_phase_min(signal,A=None):

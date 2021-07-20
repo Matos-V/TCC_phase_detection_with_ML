@@ -2,6 +2,7 @@ M = 16               # ordem da modulação
 Fb = 24e9            # taxa de símbolos
 SpS = 2 and 4        # amostras por símbolo
 Fs = SpS*Fb          # taxa de amostragem
+SNR = 50
 rolloff = 0.05       # Rolloff do filtro formatador de pulso
 amostras = 512       # number of features in the neural net
 size = 30000         # number of samples
