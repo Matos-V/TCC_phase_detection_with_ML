@@ -26,7 +26,7 @@ def generate_signal(M: int, Fb: int, SpS: int, SNR: float, rolloff=0.01):
         QAM_signal (ResampledQAM: np.ndarray): Símbolos complexos do sinal QAM gerado.
     """
     Fs = SpS*Fb
-    QAM_signal = signals.ResampledQAM(M, 2**16, fb=Fb, fs=Fs, nmodes=1,
+    QAM_signal = signals.ResampledQAM(M, 2**20, fb=Fb, fs=Fs, nmodes=1,
                              resamplekwargs={"beta": rolloff, "renormalise": True})
     QAM_signal = impairments.simulate_transmission(QAM_signal, snr=SNR)
 
@@ -49,11 +49,11 @@ def qam_signal_phase_min(signal,A=None):
     sfm = signal.copy()
     t = np.arange(0, sfm[0].size)*1/sfm.fs
     if A is None:
-      A = (np.max(np.abs(sfm)))*np.exp(1j*np.deg2rad(45))
+      A = (np.max(np.abs(sfm)))
     Δf = 2*np.pi*(sfm.fb/2)*t
     sfm = A + sfm*np.exp(1j*Δf)
-
-    return sfm , A
+    CSPR = (A**2/2)/np.mean(np.abs(signal**2))
+    return sfm , A , 10*np.log10(CSPR)
 
 def abs_and_phases(sfm):
     """ Divisão do sinal em fase mínima em componentes de amplitudes e fases.
